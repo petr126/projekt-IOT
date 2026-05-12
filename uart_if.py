@@ -18,14 +18,14 @@ class interface:
     def get_n_rx_bytes(self):
         return len(self.rx_string)
 
-    def write(self, message):
+    def write(self, message :str):
         self.flush_rx_buffer()
-        self.uart.write(message)
+        self.uart.write(bytes(message, "ascii"))
 
     def await_response(self, timeout_ms):
         byte_timer = self.__byte_timeout_us
         last_n_bytes = self.uart.any()
-
+        
         while timeout_ms > 0:
             if(last_n_bytes != self.uart.any()):
 
@@ -37,9 +37,28 @@ class interface:
                     byte_timer = byte_timer-1
                     time.sleep_us(1)
 
-                rx_string = str(self.uart.read(last_n_bytes))
+                self.rx_string = str(self.uart.read(last_n_bytes), "ascii")
                 return False
 
             timeout_ms = timeout_ms-1
             time.sleep_ms(1)
+            
         return True
+    
+    def test(self):
+        self.write("AT\r\n")
+        time.sleep(1)
+        
+        print(f"Bytes: {self.uart.any()}, Response: {self.uart.read(10)}")
+        
+    def debug_print(self, time_to_print):
+        while(time_to_print > 0):
+            data = self.uart.readline()
+            if data != None:
+                print(data)
+                
+            time_to_print = time_to_print-1
+            time.sleep_ms(10)
+            
+            
+    

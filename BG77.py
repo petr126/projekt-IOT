@@ -1,5 +1,6 @@
 import re
 import uart_if
+import time
 
 #TODO APN, RAI, eDRX, LTE-CAT-M
 #TODO Automatic status updates from URC
@@ -22,7 +23,7 @@ class BG77:
         self.SYSMODE = "NOSERVICE"
         self.RSSI = 0
         self.SINR = 0
-        self.__regex_qcsq = re.compile("\\+QCSQ:\\s\"(\\w{1,9})\",([-]?\\d{1,3}),([-]?\\d{1,3}),([-]?\\d{1,3}),([-]?\\d{1,3})\\s*")
+        self.__regex_qcsq = re.compile(r'\s*\+QCSQ:\s"([A-Za-z0-9_]+)",([-]?\d{1,3}),([-]?\d{1,3}),([-]?\d{1,3}),([-]?\d{1,3})')
 
 
     def __send_command(self, command, timeout=1000, success_condition = "OK\r\n"):
@@ -45,11 +46,13 @@ class BG77:
         return False
 
     def check_radio_condition(self):
-        if self.__send_command("AT+QSSQ\r\n", 300):
+        if self.__send_command("AT+QCSQ\r\n", 300):
             print("Unable to determine radio conditions")
             return True
 
-        regex_match = self.__regex_qcsq.match(self.interface.rx_string)
+        print(repr(self.interface.rx_string))
+
+        regex_match = self.__regex_qcsq.search(self.interface.rx_string)
 
         if regex_match == None:
             print("Unable to determine sysmode")
@@ -57,22 +60,40 @@ class BG77:
         
         self.sysmode = regex_match.group(REGEX_QCSQ_SYSMODE)
 
-        match self.sysmode:
-            case "NOSERVICE":
-                self.RSSI = 0
-                self.SINR = 0
-            case "GSM":
-                self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
-                self.SINR = 0
-            case "eMTC":
-                self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
-                self.SINR = int(regex_match.group(REGEX_QCSQ_SINR))
-            case "NBIoT":
-                self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
-                self.SINR = int(regex_match.group(REGEX_QCSQ_SINR))
-            case _:
-                print("Unable to determine sysmode")
-                return True
+        print(f"Sysmode: {self.sysmode}")
+
+        if self.sysmode == "NOSERVICE":
+            self.RSSI = 0
+            self.SINR = 0
+        elif self.sysmode == "GSM":
+            self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
+            self.SINR = 0
+        elif self.sysmode == "eMTC":
+            self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
+            self.SINR = int(regex_match.group(REGEX_QCSQ_SINR))
+        elif self.sysmode == "NBIoT":
+            self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
+            self.SINR = int(regex_match.group(REGEX_QCSQ_SINR))
+        else:
+            print("Unable to determine sysmode")
+            return True
+
+#         match self.sysmode:
+#             case "NOSERVICE":
+#                 self.RSSI = 0
+#                 self.SINR = 0
+#             case "GSM":
+#                 self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
+#                 self.SINR = 0
+#             case "eMTC":
+#                 self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
+#                 self.SINR = int(regex_match.group(REGEX_QCSQ_SINR))
+#             case "NBIoT":
+#                 self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
+#                 self.SINR = int(regex_match.group(REGEX_QCSQ_SINR))
+#             case _:
+#                 print("Unable to determine sysmode")
+#                 return True
 
         return False
 
@@ -94,7 +115,7 @@ class BG77:
 
     def init_BG77(self):
         #setup unsolicited reports
-        if self.__send_command("AT+QURCCFG=\"urcport\",\"uart1\"\r\n", 300):
+        if self.__send_command("AT+QURCCFG=\"urcport\",\"uart1\"\r\n", 1000):
             return True
 
         if self.__send_command("AT+CEREG=2\r\n", 300):
@@ -104,11 +125,11 @@ class BG77:
         if self.set_radio(1):
             return True
 
-        if self.check_radio_condition():
-            return True
+#         if self.check_radio_condition():
+#             return True
 
-        if self.SYSMODE == "NOSERVICE":
-            return True
+#         if self.SYSMODE == "NOSERVICE":
+#             return True
 
         if self.check_sim():
             return True
@@ -116,12 +137,12 @@ class BG77:
         #LTE Cat-M
         if self.__send_command("AT+QCFG=\"iotopmode\",0\r\n", 300):
             return True
-
-        if self.__send_command("AT+QCFG=\"nwscanmode\",3\r\n", 300):
-            return True
-
+        
         if self.__send_command("AT+QCFG=\"band\",0x0,0x80084,0x80084,1\r\n", 300):
             return True
+
+#         if self.__send_command("AT+QCFG=\"nwscanmode\",3,1\r\n", 300):
+#             return True
 
         #Vodafone CZ
         if self.__send_command("AT+COPS=1,2,\"23003\"\r\n", 300):
@@ -141,6 +162,7 @@ class BG77:
             return True
 
         print(self.interface.rx_string)
+        self.interface.debug_print(2000)
         return False
     
     def attach_network(self):
