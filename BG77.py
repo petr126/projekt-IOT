@@ -7,11 +7,11 @@ import time
 
 #REGEX
 #QCSQ
-REGEX_QCSQ_SYSMODE  = 1
-REGEX_QCSQ_RSSI     = 2
-REGEX_QCSQ_RSRP     = 3
-REGEX_QCSQ_SINR     = 4
-REGEX_QCSQ_RSRQ     = 5
+REGEX_QCSQ_SYSMODE  = 0
+REGEX_QCSQ_RSSI     = 1
+REGEX_QCSQ_RSRP     = 2
+REGEX_QCSQ_SINR     = 3
+REGEX_QCSQ_RSRQ     = 4
 
 MINIMAL_RSSI = -100
 
@@ -23,8 +23,7 @@ class BG77:
         self.SYSMODE = "NOSERVICE"
         self.RSSI = 0
         self.SINR = 0
-        self.__regex_qcsq = re.compile(r'\s*\+QCSQ:\s"([A-Za-z0-9_]+)",([-]?\d{1,3}),([-]?\d{1,3}),([-]?\d{1,3}),([-]?\d{1,3})')
-
+        self.__regex_qcsq = re.compile(r'\s*\+QCSQ:\s"(\w{1,9})"')
 
     def __send_command(self, command, timeout=1000, success_condition = "OK\r\n"):
         self.interface.write(command)
@@ -50,34 +49,58 @@ class BG77:
             print("Unable to determine radio conditions")
             return True
 
-        print(repr(self.interface.rx_string))
-
-        regex_match = self.__regex_qcsq.search(self.interface.rx_string)
-
-        if regex_match == None:
-            print("Unable to determine sysmode")
-            return True
+#MRDAAAAAT
+        string_data = self.interface.rx_string.split(",")
         
-        self.sysmode = regex_match.group(REGEX_QCSQ_SYSMODE)
-
-        print(f"Sysmode: {self.sysmode}")
-
-        if self.sysmode == "NOSERVICE":
+        if "NOSERVICE" in self.interface.rx_string:
+            self.SYSMODE = "NOSERVICE"
             self.RSSI = 0
             self.SINR = 0
-        elif self.sysmode == "GSM":
-            self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
+        elif "GSM" in self.interface.rx_string:
+            self.SYSMODE = "GSM"
+            self.RSSI = int(string_data[REGEX_QCSQ_RSSI])
             self.SINR = 0
-        elif self.sysmode == "eMTC":
-            self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
-            self.SINR = int(regex_match.group(REGEX_QCSQ_SINR))
-        elif self.sysmode == "NBIoT":
-            self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
-            self.SINR = int(regex_match.group(REGEX_QCSQ_SINR))
+        elif "eMTC" in self.interface.rx_string:
+            self.SYSMODE = "eMTC"
+            self.RSSI = int(string_data[REGEX_QCSQ_RSSI])
+            self.SINR = int(string_data[REGEX_QCSQ_SINR])
+        elif "NBIoT" in self.interface.rx_string:
+            self.SYSMODE = "NBIoT"
+            self.RSSI = int(string_data[REGEX_QCSQ_RSSI])
+            self.SINR = int(string_data[REGEX_QCSQ_SINR])
         else:
             print("Unable to determine sysmode")
             return True
-
+        
+#REGEX nefunguje, zkurvenej python, uz to nikdy nechci videt, jebat tenhle projekt	
+#         print(repr(self.interface.rx_string))
+# 
+#         regex_match = self.__regex_qcsq.search(self.interface.rx_string)
+# 
+#         if regex_match == None:
+#             print("Unable to determine sysmode")
+#             return True
+#         
+#         self.SYSMODE = regex_match.group(REGEX_QCSQ_SYSMODE)
+# 
+#         print(f"Sysmode: {self.sysmode}")
+# 
+#         if self.SYSMODE == "NOSERVICE":
+#             self.RSSI = 0
+#             self.SINR = 0
+#         elif self.SYSMODE == "GSM":
+#             self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
+#             self.SINR = 0
+#         elif self.SYSMODE == "eMTC":
+#             self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
+#             self.SINR = int(regex_match.group(REGEX_QCSQ_SINR))
+#         elif self.SYSMODE == "NBIoT":
+#             self.RSSI = int(regex_match.group(REGEX_QCSQ_RSSI))
+#             self.SINR = int(regex_match.group(REGEX_QCSQ_SINR))
+#         else:
+#             print("Unable to determine sysmode")
+#             return True
+# 
 #         match self.sysmode:
 #             case "NOSERVICE":
 #                 self.RSSI = 0
@@ -125,11 +148,11 @@ class BG77:
         if self.set_radio(1):
             return True
 
-#         if self.check_radio_condition():
-#             return True
+        if self.check_radio_condition():
+            return True
 
-#         if self.SYSMODE == "NOSERVICE":
-#             return True
+        if self.SYSMODE == "NOSERVICE":
+            return True
 
         if self.check_sim():
             return True
