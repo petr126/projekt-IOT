@@ -1,9 +1,10 @@
+#BG77.py
+#Martin Vejman
+
 import re
 import uart_if
 import time
-
-#TODO APN, RAI, eDRX, LTE-CAT-M
-#TODO Automatic status updates from URC
+import os
 
 #REGEX
 #QCSQ
@@ -14,6 +15,10 @@ REGEX_QCSQ_SINR     = 3
 REGEX_QCSQ_RSRQ     = 4
 
 MINIMAL_RSSI = -100
+
+PACKET_SIZE = 1023
+CONFIRM_TIMEOUT = 10000
+N_ATTEMPTS = 5
 
 class BG77:
     def __init__(self, interface, IP, port):
@@ -35,6 +40,13 @@ class BG77:
             print(f"ERROR: {self.interface.rx_string}, COMMAND: {command}")
             return True
 
+        return False
+    
+    def __setup_PSM():
+        #disable eDRX
+        if self.__send_command("AT+CEDRXS=0\r\n", 300):
+            return True
+        
         return False
 
     def set_radio(self, mode):
@@ -137,7 +149,7 @@ class BG77:
             return True
 
     def init_BG77(self):
-        #setup unsolicited reports
+        #setup URC
         if self.__send_command("AT+QURCCFG=\"urcport\",\"uart1\"\r\n", 1000):
             return True
 
@@ -173,6 +185,10 @@ class BG77:
 
         #APN
         if self.__send_command("AT+CGDCONT=1,\"IP\",\"lpwa.vodafone.iot\"\r\n", 300):
+            return True
+        
+        if self.__setup_PSM():
+            print("Failed to setup PSM mode")
             return True
 
         return False
@@ -230,7 +246,10 @@ class BG77:
         
         return False
     
-    def send_image(self, json_string, stream, stream_length):
+    def send_image(self, json_string, filename, stream_length):
+        file = open(filename, 'rb')
+        bytes_left = os.path.getsize(filename)
+        
         if self.check_sim():
             return True
         
@@ -240,6 +259,52 @@ class BG77:
     
         if self.__send_command("AT+QIACT=1\r\n", 1000):
             return True
+        
+        #open socket
+        if self.__send_command(f"AT+QIOPEN=1,0,\"UDP\",\"{self.serverIP}\",{self.serverPort},0,0\r\n", 10000, "CONNECT\r\n"):
+            return True
+        
+        #wait for confirmation
+        if self.interface.await_response(10000):
+            print(f"ERROR: timeout opening socket")
+            return True
+        
+        if "QIOPEN: 0,0" not in self.interface.rx_string:
+            print(f"ERROR: opening socket failed")
+            return True
+                        
+        if self.__send_command(f"AT+QISEND=0,{len(json_string.encode("ascii"))+1}\r\n", 1000, ">"):
+            print(f"ERROR: failed to send packet")
+            return True
+        
+        if self.__send_command((f"{json_string.encode("ascii")}{b"\xA1"}").encode("ascii"), 10000, "SEND OK"):
+            print(f"ERROR: failed to send packet")
+            return True
+        
+        #Send image
+        while True:
+            message = file.read(PACKET_SIZE).hex()
+            attempts_left = N_ATTEMPTS
+        
+            if len(message) == 0:
+                break
+        
+            #Try to send packet N_ATTEMPTS times
+            while True:
+                attempts_left = attempts_left - 1
+                
+                if attempts_left == 0:
+                    return True
+                
+                if self.__send_command(f"AT+QISEND=0,{len(message)+1}\r\n", 1000, ">"):
+                    return True
+            
+                self.__send_command((f"{message}{b"\xA1"}").encode("ascii"), 10000, "SEND OK")
+                
+                if self.interface.await_response(10000):
+                    continue
+                
+                break
         
         return False
 
