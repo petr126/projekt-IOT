@@ -42,7 +42,7 @@ class BG77:
 
         return False
     
-    def __setup_PSM():
+    def __setup_PSM(self):
         #disable eDRX
         if self.__send_command("AT+CEDRXS=0\r\n", 300):
             return True

@@ -1,5 +1,7 @@
 from BG77 import BG77
 from uart_if import interface
+from file_manager import FileManager
+from machine import Pin
 
 uart = interface(115200)
 module = BG77(uart, "1.1.1.1", 1)
