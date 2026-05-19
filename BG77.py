@@ -301,6 +301,7 @@ class BG77:
             
                 self.__send_command((f"{message}{b"\xA1"}").encode("ascii"), 10000, "SEND OK")
                 
+                #TODO tady ceka na AT+QUIRC, ale nekontroluje co mu prislo
                 if self.interface.await_response(10000):
                     continue
                 

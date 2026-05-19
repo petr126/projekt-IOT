@@ -4,6 +4,8 @@ from file_manager import FileManager
 from machine import Pin
 import time
 
+#TODO file size
+
 def button_irq_handle(pin):
     file_manager.push_record("test")
     time.sleep_ms(100)
