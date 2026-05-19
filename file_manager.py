@@ -63,6 +63,10 @@ class FileManager:
         stack_file.close()
 
         return output_list
+    
+    def print_all_records(self):
+        file = open(f"{SD_MOUNTPATH}/{RECORD_STACK_FILENAME}", "r");
+        
+        print(file.read())
 
-
-
+        file.close()
