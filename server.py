@@ -7,7 +7,7 @@ SERVER_IP = "127.0.0.1"
 SERVER_PORT = 65444
 
 IMAGE_CHUNK_SIZE = 512
-IMAGE_BUFFER_SIZE = IMAGE_CHUNK_SIZE
+IMAGE_BUFFER_SIZE = IMAGE_CHUNK_SIZE * 2
 
 INFO_BUFFER_SIZE = 512
 RECEIVE_TIMEOUT = 10
@@ -58,8 +58,11 @@ def run_server():
                 try:
                     data, client_address = sock.recvfrom(IMAGE_BUFFER_SIZE)
 
-                    image_file.write(data)
-                    received_size += len(data)
+                    hex_text = data.decode("ascii").strip()
+                    image_bytes = bytes.fromhex(hex_text)
+
+                    image_file.write(image_bytes)
+                    received_size += len(image_bytes)
 
                     print(
                         f"Přijata část obrázku: {len(data)} B, "
