@@ -36,7 +36,6 @@ module.set_radio(1)
 
 uart.debug_print(5000)
 
-
 # while True:
 # #    file_manager.print_all_records()
 #     print("start")
