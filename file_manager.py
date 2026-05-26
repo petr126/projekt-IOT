@@ -1,3 +1,6 @@
+#File manager
+#Martin Vejman
+
 import machine
 import sdcard
 import os
@@ -10,8 +13,8 @@ SD_MOUNTPATH = "/sd"
 IMAGE_DIR = "/img"
 
 class FileManager:
-    def __init__(self, miso_pin, mosi_pin, clk_pin, cs_pin):
-        self.spi = SPI(0, mosi=mosi_pin, miso = miso_pin, sck = clk_pin)
+    def __init__(self, miso_pin, mosi_pin, clk_pin, cs_pin, spi_id):
+        self.spi = SPI(spi_id, mosi=mosi_pin, miso = miso_pin, sck = clk_pin)
         self.sd = sdcard.SDCard(self.spi, cs_pin)
         os.mount(self.sd, SD_MOUNTPATH)
 
@@ -32,7 +35,7 @@ class FileManager:
         if len(files) == 0:
             return None
         
-        return files[time.ticks_ms() % len(files)]
+        return f"{SD_MOUNTPATH}/{IMAGE_DIR}/{files[time.ticks_ms() % len(files)]}"
     
     def push_record(self, image_filename):
         file = open(f"{SD_MOUNTPATH}/{RECORD_STACK_FILENAME}", "a")
@@ -41,23 +44,32 @@ class FileManager:
         file.close()
 
     def pop_records(self):
-        top_file = open(f"{SD_MOUNTPATH}/{RECORDS_TOP_FILENAME}", "rw")
+        top_file = open(f"{SD_MOUNTPATH}/{RECORDS_TOP_FILENAME}", "r")
         stack_file = open(f"{SD_MOUNTPATH}/{RECORD_STACK_FILENAME}", "r")
 
         top_record = top_file.read()
+        top_file.close()
+        
         records = stack_file.read().split("\r\n")
+
+        if len(records) < 2:
+            return []
 
         new_record_flag = False
         output_list = []
 
         for record in records:
+            if record == "":
+                continue
+            
             if new_record_flag:
                 output_list.append(record)
 
             if top_record in record:
                 new_record_flag = True
 
-        top_file.write(f"{records[len(records-1)]}")
+        top_file = open(f"{SD_MOUNTPATH}/{RECORDS_TOP_FILENAME}", "w")
+        top_file.write(records[len(records)-2])
 
         top_file.close()
         stack_file.close()
