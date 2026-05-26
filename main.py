@@ -26,6 +26,10 @@ file_manager.check_files()
 module.init_BG77()
 module.test_BG77()
 
+#SET PSM
+module.__send_command('AT+CPSMS=1,,,,"00100101","00000011"') #tau: 10h, active time: 6s
+module.__send_command("AT+CPSMS?") #verify PSM settings
+
 module.send_telemetry("test")
 
 
