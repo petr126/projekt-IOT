@@ -46,11 +46,6 @@ class BG77:
         #disable eDRX
         if self.__send_command("AT+CEDRXS=0\r\n", 300):
             return True
-        
-        #SET PSM
-        self.__send_command('AT+CPSMS=1,,,,"00100101","00000011"') #tau: 10h, active time: 6s
-        self.__send_command("AT+CPSMS?") # verify PSM settings
-        
         return False
 
     def set_radio(self, mode):
