@@ -186,8 +186,15 @@ class BG77:
         if self.__send_command("AT+CGDCONT=1,\"IP\",\"lpwa.vodafone.iot\"\r\n", 300):
             return True
         
+        #PSM
         if self.__setup_PSM():
-            print("Failed to setup PSM mode")
+            
+            self.__send_command('AT+CPSMS=1,,,,"10100001","00000011"') #tau: 1m, active time: 3s
+            self.__send_command("AT+CPSMS?") # verify PSM settings
+            tau, active = psm.parse_cpsms(self.interface.rx_string)
+            print("TAU:", tau, "s")
+            print("Active Time:", active, "s")
+
             return True
 
         return False
