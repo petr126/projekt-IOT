@@ -9,6 +9,13 @@ def button_irq_handle(pin):
     file_manager.push_record(file_manager.get_random_image())
     time.sleep_ms(100)
 
+def get_telemetry_json(SINR, RSRP):
+    message = {
+        "SINR": SINR,
+        "RSRP": RSRP
+    }
+    return json.dumps(message)
+
 def get_image_json(id, file_size):
     return f"{{\"type\":\"image_info\",\"id\":{id},\"size\":{file_size},\"encoding\":\"hex\"}}"
 
