@@ -99,10 +99,15 @@ Důvodem posílání částí obrázku pomocí zakódovaných dat do HEX formát
 ## Princip fungování serveru
 
 Server běži na adrese 147.229.148.105 a na portu 7001. Server je nastaven tak, aby naslouchal od všech příchozých adres.
+
 V první části serveru se inicialuzují proměnné, které slouží ke správnému fungování serveru. První funkce serveru (run_server) zajišťuje nastavení stavových proměnných a vytvoření UDP socketu. 
 Funkce reset_server_state slouží k vrácení a restartování serveru v případě chyby nebo v případě, že se přeruší posílání obrázku.
+
 Dále následuje hlavní smyčka serveru, ve které server pracuje ve dvou hlavních režimech. V prvním režimu server přijímá obrázek, který dekóduje a uloží do složky images a pošle odesílateli zprávu "OK".
-V druhém režimu server čeká na běžnou zprávu, podle které určí, zda se jedná o telemetrii nebo o informaci o obrázku. Tuto informaci vyčte z JSON zprávy z hodnoty type. V případě telemetrie server jen telemetrii příjme a neposílá nic zpět. V případě informace o obrázku server přepíše stavovou proměnnou receiving_image a začne přijímat části obrázku. 
+V druhém režimu server čeká na běžnou zprávu, podle které určí, zda se jedná o telemetrii nebo o informaci o obrázku. Tuto informaci vyčte z JSON zprávy z hodnoty type. 
+
+V případě telemetrie server jen telemetrii příjme a neposílá nic zpět. 
+V případě informace o obrázku server přepíše stavovou proměnnou receiving_image a začne přijímat části obrázku. 
 Na konci kódu je server ošetřen a je nastaven na automatický restart při chybě pomocí funkce reset_server_state.
 
 
