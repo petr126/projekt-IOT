@@ -3,7 +3,7 @@ import json
 import os
 import time
 
-SERVER_IP = "147.229.148.105"
+SERVER_IP = "0.0.0.0"
 SERVER_PORT = 7001
 
 IMAGE_CHUNK_SIZE = 512
