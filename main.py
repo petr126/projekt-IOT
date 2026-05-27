@@ -5,6 +5,9 @@ from machine import Pin
 import time
 import os
 
+TELEMETRY_INTERVAL_MS = 30 * 60 * 1000
+last_telemetry_time = time.ticks_ms()
+
 def button_irq_handle(pin):
     file_manager.push_record(file_manager.get_random_image())
     time.sleep_ms(100)
@@ -43,23 +46,25 @@ module.set_radio(1)
 
 uart.debug_print(5000)
 
-# while True:
+while True:
 # #    file_manager.print_all_records()
 #     print("start")
-#     module.get_radio_condition()
-# #    module.send_telemetry()
+module.get_radio_condition()
+
+if time.ticks_diff(now, last_telemetry_time) >= TELEMETRY_INTERVAL_MS:
+    last_telemetry_time = now
+    module.send_telemetry()
+
+if module.check_radio_condition():
+    continue
+    
+new_records = file_manager.pop_records()
+print(new_records)
 # 
-#     if module.check_radio_condition():
-#         continue
-# 
-#     new_records = file_manager.pop_records()
-#     print(new_records)
-# 
-#     for record in new_records:
-#         record_data = record.split(";")
-#         size = os.stat(record_data[1])[6]
-#         
-#         print(get_image_json(record_data[0], size))
-#         module.send_image(get_image_json(record_data[0], size), record_data[1], size)
-#     
-#     time.sleep(5)
+for record in new_records:
+    record_data = record.split(";")
+    size = os.stat(record_data[1])[6]
+    print(get_image_json(record_data[0], size))
+    module.send_image(get_image_json(record_data[0], size), record_data[1], size)
+    
+time.sleep(5)
