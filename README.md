@@ -82,7 +82,7 @@ Pro samotné kousky obrázku se posílají data zakódovaná ve formátu hex, kt
 
 Důvodem použití formátu JSON je jednoduchá implementace, přehlednost zpráv, možnost a jednoduchost rozšíření zpráv například pro více zařízení, snadné zpracování a výbrání dat na straně serveru, což zahrnuje rozlišení telemetrie a informaci o obrázku. 
 
-Důvodem posílání částí obrázku pomocí zakódovaných dat do HEX formátnu je jednodušší posílání, menší riziko oproti posílání dat v binární podobě, znadné ladění a jednoduchý převod zpět na čistá data. Nevýhodou je ale zdvojnásobení objemu dat na dvojnásobek.
+Důvodem posílání částí obrázku pomocí zakódovaných dat do HEX formátnu je jednodušší posílání, menší riziko chyb oproti posílání dat v binární podobě, znadné ladění a jednoduchý převod zpět na čistá data. Nevýhodou je ale zdvojnásobení objemu dat na dvojnásobek.
 
 ## Základní princip přenosu obrázku
 
