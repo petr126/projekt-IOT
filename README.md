@@ -1,7 +1,145 @@
 # Projekt FOTOPAST - Detekce pohybu
 
-## Základní popis
+Tento projekt se zabývá návrhem a realizací jednoduché IoT fotopasti pro monitorování pohybu lesní zvěře na hranici lesní a obydlené oblasti.
 
-Tento projekt se zabývá návrhem a realizací jednoduché IoT fotopasti pro monitorování pohybu lesní zvěře na hranici lesní a obydlené oblasti. Detekce pohybu je v prototypu simulována pomocí tlačítka. Po aktivaci zařízení vytvoří záznam o pořízení snímku, uloží jej na SD kartu a následně odešle informace a data obrázku na vzdálený server.
+## Cíle
+
+Cílem projektu je naprogramovat a zprovoznit jednoduché zařízení, které bude schopné:
+
+- simulovat detekci pohybu pomocí tlačítka
+- uložit záznam o pořízení fotografie na SD kartu
+- načíst předem uložený obrázek z SD karty
+- odeslat informace o obrázku na vzdálený server
+- odeslat obrázek na vzdálený server
+- periodicky odesílat telemetrické informace
+- kontrolovat rádiové podmínky před přenosem dat
+- dlouhého fungování díky vhodně implementovaných módů pro úsporu energie
+
+## Použité technologie
 
 Zařízení využívá mikrokontrolér ESP32 jako hlavní řídicí jednotku a komunikační modul BG77 pro připojení do mobilní sítě pomocí technologie LTE Cat-M. Pro přenos dat je použit transportní protokol UDP. Nad UDP je vytvořen jednoduchý aplikační protokol, který využívá JSON zprávy pro přenos telemetrie a řídicích informací a HEX kódování pro přenos obrazových dat.
+
+### ESP32
+
+Mezi hlavní funkce ESP32 patří:
+
+- inicializace systému
+- obsluha tlačítka
+- práce se soubory na SD kartě
+- vytvoření telemetrických a informačních zpráv JSON
+- čtení obrázku po částech
+- převod obrazových dat do HEX formátu
+- odesílání dat přes BG77
+- řízení hlavní smyčky programu
+
+### BG77
+
+Mezi hlavní funkce BG77 patří:
+
+- kontrola SIM karty
+- registrace do sítě operátora
+- otevření UDP socketu
+- odesílání JSON zpráv
+- odesílání částí obrázku
+- příjem potvrzení ze serveru
+
+### SD karta
+
+SD karta slouží jako uložiště pro záznamy o pořízení fotografie a pro samotné úkládání pořízených fotek. V tomto projektu se fotky neukládají na SD kartu, ale jsou na SD kartu nahrány předem. Výhodou použití SD karty je, že se fotky nemusí posílat hned, když nejsou dostatečně dobré rádiové podmínky pro spolehlivý přenos, což by mohlo způsobit velkou ztrátovost.
+
+### Tlačítko
+
+Tlačítko v projektu nahrazuje senzor a slouží k simulaci pořízení fotografie a záznamu.
+
+### LTE Cat-M
+
+Pro přenos dat byla zvolena technologie LTE Cat-M. Jedná se technologii vhodnou pro zařízení s nižší spotřebou energie, která potřebují komunikovat v místech bez dostupné Wi-Fi sítě.
+
+Technologie spadá do licenčních technologií, kde nemusíme u přenosu řešit například duty cycle nebo maximální velikost zprávy. Z důvodu posílání telemetrie každých 30 minut a zasílání informací o obrázku a obrázku samotného by zařízení nesplňovalo duty cycle, který býva zpravidla 1% nebo méně. Z pohledu maximální velikosti zprávy by zařízení nemohlo pracovat s bezlicenční technologií. Zařízení posílá kousky obrázku po 512B a po zakódování do HEX po 1024B.
+
+Technologie je vhodná pro zařízení umístěných v odlehlejších částech. Pro tento projekt se předpokládá že zařízení bude umístěno na hranici lesní a obydlené oblasti, kde nelze předpokládat například připojení na síť Wi-Fi. Díky svému maximálnímu povolenému vysílacímu výkonu a možnosti pracovat v nižších frekvencích (pod 1GHz) může technologie poměrně spolehlivě pracovat i v odlehlých místech, kde nemusí být vhodné rádiové podmínky.
+
+Technologie NB-IoT a LTE Cat-M jsou pro tento projekt a účel dost podobné. LTE Cat-M oproti NB-Iot nabízí větší přenosovou rychlost a nižší latenci, zatímco NB-Iot dokáže přenášet data v trochu horších podmínkách s větší latencí. Z důvodu přenášení někdy i velkých obrázku byla zvolena technologie LTE Cat-M pro rychlejší posílání jednotlivých částí obrázku.
+
+### UDP
+
+Jako transportní protokol byl zvolen protokol UDP. Hlavními důvody jsou například:
+
+- jednoduchá implementace
+- nízká režie
+- rychlé odesílání dat
+- bez nutnosti navazovat spojení
+- stále s možnosti vlastního potvrzování
+
+Protokol UDP je jednoduchý protokol, který nevyžaduje navazování spojení, ale nezajišťuje přes potvrzení doručení dat. Potvrzování dat v tomto projektu bylo zajištěno přes vlastní server, který posílá po každé části obrázku zprávu "OK", na kterou zařízení čeká a neposílá další části obrázku dokud nepříjde potvrzení. Pokud ji do časového limitu neobdrží, tak bude zařízení posílat část obrázku znovu. Protokol TCP by pro projekt nebyl vhodný z důvodu velké režie, nutnosti navazování spojení, pomalejšímu posílání dat a těžší implementaci. Výhodou TCP by mohlo být již integrované potvrzování zprávy, ale nevýhody TCP protokolu by ve výsledku převažovali výhody.
+
+### Aplikační protokol
+
+Nad protokolem UDP byl vytvořen jednoduchý aplikační protokol, který definuje jakým způsobem budou data posílána na server.
+Pro telemetrii se posílá zpráva ve formátu JSON, která obsahuje (RSSI a RSNR).
+Pro informaci o obrázku, která se posílá před samotným posíláním částí obrázků, se používá zpráva ve formátu JSON, která obsahuje (type, id, size a encoding).
+Pro samotné kousky obrázku se posílají data zakódovaná ve formátu hex, které jsou dále ještě zakódovaná do formátu ASCII.
+
+Důvodem použití formátu JSON je jednoduchá implementace, přehlednost zpráv, možnost a jednoduchost rozšíření zpráv například pro více zařízení, snadné zpracování a výbrání dat na straně serveru, což zahrnuje rozlišení telemetrie a informaci o obrázku. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
