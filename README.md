@@ -71,7 +71,7 @@ Jako transportní protokol byl zvolen protokol UDP. Hlavními důvody jsou např
 - bez nutnosti navazovat spojení
 - stále s možností vlastního potvrzování
 
-Protokol UDP je jednoduchý protokol, který nevyžaduje navazování spojení, ale nezajišťuje potvrzení doručených dat. Potvrzování dat v tomto projektu bylo zajištěno přes vlastní server, který posílá po každé části obrázku zprávu "OK", na kterou zařízení čeká a neposílá další části obrázku dokud nepříjde potvrzení. Pokud ji do časového limitu neobdrží, tak bude zařízení posílat část obrázku znovu. Protokol TCP by pro projekt nebyl vhodný z důvodu velké režie, nutnosti navazování spojení, pomalejšímu posílání dat a těžší implementaci. Výhodou TCP by mohlo být již integrované potvrzování zprávy, ale nevýhody TCP protokolu by ve výsledku převažovali výhody.
+Protokol UDP je jednoduchý protokol, který nevyžaduje navazování spojení, ale nezajišťuje potvrzení doručených dat. Potvrzování dat v tomto projektu bylo zajištěno přes vlastní server, který posílá po každé části obrázku zprávu "OK", na kterou zařízení čeká a neposílá další části obrázku dokud nepříjde potvrzení. Pokud ji do časového limitu neobdrží, tak bude zařízení posílat část obrázku znovu. Protokol TCP by pro projekt nebyl vhodný z důvodu velké režie, nutnosti navazování spojení, pomalejšímu posílání dat a těžší implementaci. Výhodou TCP by mohlo být již integrované potvrzování zprávy, ale nevýhody TCP protokolu by ve výsledku převažovaly výhody.
 
 ### Aplikační protokol
 
@@ -89,17 +89,21 @@ Důvodem posílání částí obrázku pomocí zakódovaných dat do HEX formát
 1) při stisku tlačítka se uloží záznam o pořízení na SD kartu.
 2) zkontrolují se rádiové podmínky
 3) zařízení vybere náhodný obrázek a odešle JSON zprávu typu image_info
-4) po přijetí zpráva typu image_info se server přepne na příjem obrázku
+4) po přijetí zprávy typu image_info se server přepne na příjem obrázku
 5) zařízení začne posílat zakódované části obrázku na server a po každé části čeká na zprávu "OK" od serveru než pošle další část
 6) server příjme část obrázku a dekóduje ji.
 7) server uloží část obrázku do složky images a pošle zprávu "OK"
 8) zařízení pošle další část obrázku
 9) po přijetí celého obrázku se zastaví na serveru přijímání obrázku
 
+## Princip fungování serveru
 
-
-
-
+Server běži na adrese 147.229.148.105 a na portu 7001. Server je nastaven tak, aby naslouchal od všech příchozých adres.
+V první části serveru se inicialuzují proměnné, které slouží ke správnému fungování serveru. První funkce serveru (run_server) zajišťuje nastavení stavových proměnných a vytvoření UDP socketu. 
+Funkce reset_server_state slouží k vrácení a restartování serveru v případě chyby nebo v případě, že se přeruší posílání obrázku.
+Dále následuje hlavní smyčka serveru, ve které server pracuje ve dvou hlavních režimech. V prvním režimu server přijímá obrázek, který dekóduje a uloží do složky images a pošle odesílateli zprávu "OK".
+V druhém režimu server čeká na běžnou zprávu, podle které určí, zda se jedná o telemetrii nebo o informaci o obrázku. Tuto informaci vyčte z JSON zprávy z hodnoty type. V případě telemetrie server jen telemetrii příjme a neposílá nic zpět. V případě informace o obrázku server přepíše stavovou proměnnou receiving_image a začne přijímat části obrázku. 
+Na konci kódu je server ošetřen a je nastaven na automatický restart při chybě pomocí funkce reset_server_state.
 
 
 
