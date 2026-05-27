@@ -76,7 +76,7 @@ Protokol UDP je jednoduchý protokol, který nevyžaduje navazování spojení, 
 ### Aplikační protokol
 
 Nad protokolem UDP byl vytvořen jednoduchý aplikační protokol, který definuje jakým způsobem budou data posílána na server.
-Pro telemetrii se posílá zpráva ve formátu JSON, která obsahuje (RSSI a RSNR).
+Pro telemetrii se posílá zpráva ve formátu JSON, která obsahuje (RSSI a RSRP).
 Pro informaci o obrázku, která se posílá před samotným posíláním částí obrázků, se používá zpráva ve formátu JSON, která obsahuje (type, id, size a encoding).
 Pro samotné kousky obrázku se posílají data zakódovaná ve formátu hex, které jsou dále ještě zakódovaná do formátu ASCII.
 
