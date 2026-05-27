@@ -82,7 +82,19 @@ Pro samotné kousky obrázku se posílají data zakódovaná ve formátu hex, kt
 
 Důvodem použití formátu JSON je jednoduchá implementace, přehlednost zpráv, možnost a jednoduchost rozšíření zpráv například pro více zařízení, snadné zpracování a výbrání dat na straně serveru, což zahrnuje rozlišení telemetrie a informaci o obrázku. 
 
+Důvodem posílání částí obrázku pomocí zakódovaných dat do HEX formátnu je jednodušší posílání, menší riziko oproti posílání dat v binární podobě, znadné ladění a jednoduchý převod zpět na čistá data. Nevýhodou je ale zdvojnásobení objemu dat na dvojnásobek.
 
+## Základní princip přenosu obrázku
+
+1) při stisku tlačítka se uloží záznam o pořízení na SD kartu.
+2) zkontrolují se rádiové podmínky
+3) zařízení vybere náhodný obrázek a odešle JSON zprávu typu image_info
+4) po přijetí zpráva typu image_info se server přepne na příjem obrázku
+5) zařízení začne posílat zakódované části obrázku na server a po každé části čeká na zprávu "OK" od serveru než pošle další část
+6) server příjme část obrázku a dekóduje ji.
+7) server uloží část obrázku do složky images a pošle zprávu "OK"
+8) zařízení pošle další část obrázku
+9) po přijetí celého obrázku se zastaví na serveru přijímání obrázku
 
 
 
