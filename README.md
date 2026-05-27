@@ -110,21 +110,33 @@ V případě telemetrie server jen telemetrii příjme a neposílá nic zpět.
 V případě informace o obrázku server přepíše stavovou proměnnou receiving_image a začne přijímat části obrázku. 
 Na konci kódu je server ošetřen a je nastaven na automatický restart při chybě pomocí funkce reset_server_state.
 
+## Struktura kódu
 
+- main.py
+- bg77.py
+- uart_if.py
+- file_manager.py
+- sdcard.py
+- server.py
+- README.md
 
+#### main.py
+Hlavní program zařízení. Zajišťuje inicializaci systému, obsluhu tlačítka, hlavní smyčku programu a volání funkcí pro odesílání telemetrie a obrázků.
 
+#### bg77.py
+Soubor pro práci s komunikačním modulem BG77. Obsahuje funkce pro odesílání AT příkazů, kontrolu SIM karty, registraci do sítě, aktivaci datového připojení a odesílání dat.
 
+#### uart_if.py
+Komunikační vrstva pro UART. Zajišťuje inicializaci UART rozhraní, odesílání textových příkazů a čtení odpovědí z modulu BG77.
 
+file_manager.py
+Soubor pro práci se soubory. Obsahuje funkce pro výběr obrázku, zjištění velikosti souboru, vyčtení všechn záznamů a zápis textového záznamu.
 
+sdcard.py
+Knihovna nebo modul pro práci s SD kartou v MicroPythonu.
 
-
-
-
-
-
-
-
-
+server.py
+Python UDP server pro příjem telemetrie a obrázků.
 
 
 
