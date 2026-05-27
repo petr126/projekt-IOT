@@ -129,16 +129,18 @@ Soubor pro práci s komunikačním modulem BG77. Obsahuje funkce pro odesílán�
 #### uart_if.py
 Komunikační vrstva pro UART. Zajišťuje inicializaci UART rozhraní, odesílání textových příkazů a čtení odpovědí z modulu BG77.
 
-file_manager.py
+#### file_manager.py
 Soubor pro práci se soubory. Obsahuje funkce pro výběr obrázku, zjištění velikosti souboru, vyčtení všechn záznamů a zápis textového záznamu.
 
-sdcard.py
+#### sdcard.py
 Knihovna nebo modul pro práci s SD kartou v MicroPythonu.
 
-server.py
+#### server.py
 Python UDP server pro příjem telemetrie a obrázků.
 
+## Napájení
 
+Zařízení je navrženo pro napájení z baterky a to hlavně z důvodu umístění zařízení, což znemožňuje permanentní drátové napájení.
 
 
 
