@@ -69,7 +69,7 @@ Jako transportní protokol byl zvolen protokol UDP. Hlavními důvody jsou např
 - nízká režie
 - rychlé odesílání dat
 - bez nutnosti navazovat spojení
-- stále s možnosti vlastního potvrzování
+- stále s možností vlastního potvrzování
 
 Protokol UDP je jednoduchý protokol, který nevyžaduje navazování spojení, ale nezajišťuje přes potvrzení doručení dat. Potvrzování dat v tomto projektu bylo zajištěno přes vlastní server, který posílá po každé části obrázku zprávu "OK", na kterou zařízení čeká a neposílá další části obrázku dokud nepříjde potvrzení. Pokud ji do časového limitu neobdrží, tak bude zařízení posílat část obrázku znovu. Protokol TCP by pro projekt nebyl vhodný z důvodu velké režie, nutnosti navazování spojení, pomalejšímu posílání dat a těžší implementaci. Výhodou TCP by mohlo být již integrované potvrzování zprávy, ale nevýhody TCP protokolu by ve výsledku převažovali výhody.
 
