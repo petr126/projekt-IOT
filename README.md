@@ -40,7 +40,7 @@ Mezi hlavní funkce BG77 patří:
 - registrace do sítě operátora
 - otevření UDP socketu
 - odesílání JSON zpráv
-- odesílání částí obrázku
+- odesílání obrázku
 - příjem potvrzení ze serveru
 
 ### SD karta
@@ -110,6 +110,8 @@ V případě telemetrie server jen telemetrii příjme a neposílá nic zpět.
 V případě informace o obrázku server přepíše stavovou proměnnou receiving_image a začne přijímat části obrázku. 
 Na konci kódu je server ošetřen a je nastaven na automatický restart při chybě pomocí funkce reset_server_state.
 
+## Stavový automat
+
 ## Struktura kódu
 
 - main.py
@@ -120,28 +122,23 @@ Na konci kódu je server ošetřen a je nastaven na automatický restart při ch
 - server.py
 - README.md
 
-#### main.py
-Hlavní program zařízení. Zajišťuje inicializaci systému, obsluhu tlačítka, hlavní smyčku programu a volání funkcí pro odesílání telemetrie a obrázků.
+### main.py
+Hlavní program zařízení. Zajišťuje inicializaci systému, obsluhu přerušení, hlavní smyčku programu a volání funkcí pro odesílání telemetrie a obrázků.
 
-#### bg77.py
+### BG77.py
 Soubor pro práci s komunikačním modulem BG77. Obsahuje funkce pro odesílání AT příkazů, kontrolu SIM karty, registraci do sítě, aktivaci datového připojení a odesílání dat.
 
-#### uart_if.py
+### uart_if.py
 Komunikační vrstva pro UART. Zajišťuje inicializaci UART rozhraní, odesílání textových příkazů a čtení odpovědí z modulu BG77.
 
-#### file_manager.py
-Soubor pro práci se soubory. Obsahuje funkce pro výběr obrázku, zjištění velikosti souboru, vyčtení všechn záznamů a zápis textového záznamu.
+### file_manager.py
+Soubor pro práci se soubory. Obsluhuje zásobník záznamů
 
-#### sdcard.py
+### sdcard.py
 Knihovna nebo modul pro práci s SD kartou v MicroPythonu.
 
-#### server.py
+### server.py
 Python UDP server pro příjem telemetrie a obrázků.
-
-## Napájení
-
-Zařízení je navrženo pro napájení z baterky a to hlavně z důvodu umístění zařízení, což znemožňuje permanentní drátové napájení.
-
 
 
 
