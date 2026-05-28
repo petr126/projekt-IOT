@@ -112,6 +112,8 @@ Na konci kódu je server ošetřen a je nastaven na automatický restart při ch
 
 ## Stavový automat
 
+![alt text](https://github.com/petr126/projekt-IOT/blob/master/state_diagram.png)
+
 ## Struktura kódu
 
 - main.py
