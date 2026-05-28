@@ -17,11 +17,11 @@ Cílem projektu je naprogramovat a zprovoznit jednoduché zařízení, které bu
 
 ## Použité technologie
 
-Zařízení využívá mikrokontrolér ESP32 jako hlavní řídicí jednotku a komunikační modul BG77 pro připojení do mobilní sítě pomocí technologie LTE Cat-M. Pro přenos dat je použit transportní protokol UDP. Nad UDP je vytvořen jednoduchý aplikační protokol, který využívá JSON zprávy pro přenos telemetrie a řídicích informací a HEX kódování pro přenos obrazových dat.
+Zařízení využívá mikrokontrolér Raspberry pi pico jako hlavní řídicí jednotku a komunikační modul BG77 pro připojení do mobilní sítě pomocí technologie LTE Cat-M. Pro přenos dat je použit transportní protokol UDP. Nad UDP je vytvořen jednoduchý aplikační protokol, který využívá JSON zprávy pro přenos telemetrie a řídicích informací a HEX kódování pro přenos obrazových dat.
 
-### ESP32
+### Raspberry pi pico
 
-Mezi hlavní funkce ESP32 patří:
+Mezi hlavní funkce Raspberry pi pico patří:
 
 - inicializace systému
 - obsluha tlačítka
