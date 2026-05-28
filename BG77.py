@@ -47,8 +47,9 @@ class BG77:
         #disable eDRX
         if self.__send_command("AT+CEDRXS=0\r\n", 300):
             return True
-        self.__send_command('AT+CPSMS=1,,,,"10100001","00000011"') #tau: 1m, active time: 3s
-        self.__send_command("AT+CPSMS?") # verify PSM settings
+        # test self.__send_command('AT+CPSMS=1,,,,"10100001","00000011"') #tau: 1m, active time: 3s
+        self.__send_command('AT+CPSMS=1,,,,"01011000","10000001"\r\n', 300) #tau: 24h, active time: 30s
+        self.__send_command("AT+CPSMS?", 300) # verify PSM settings
         tau, active = psm.parse_cpsms(self.interface.rx_string)
         print("TAU:", tau, "s")
         print("Active Time:", active, "s")
